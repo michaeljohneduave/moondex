@@ -3,7 +3,7 @@ const CMC_API_URL =
 
 export type CMCRequest = {
   url: string;
-  method: Method;
+  method: "GET" | "POST" | "PUT" | "DELETE";
 };
 
 export default async function cmcRequest(opts: CMCRequest) {
