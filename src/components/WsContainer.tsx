@@ -32,7 +32,7 @@ export default function WsProvider({
           JSON.stringify({
             method: "SUBSCRIBE",
             params: list.map(
-              (symbol: string) => `${symbol.toLowerCase()}usdt@kline_1m`
+              (symbol: string) => `${symbol.toLowerCase()}usdt@ticker_1h`
             ),
             id: 1,
           })
