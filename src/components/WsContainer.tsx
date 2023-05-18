@@ -1,47 +1,57 @@
 "use client";
 
-import { wsInstance } from "@/lib/ws";
-import { useEffect, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 
-export default function WsContainer({
+export type WsContextType = {
+  isOpen: boolean;
+  socket: WebSocket | null;
+};
+
+export const WsContext = createContext<WsContextType | null>(null);
+
+export default function WsProvider({
+  list,
   children,
 }: {
+  list: any;
   children: React.ReactNode;
 }) {
+  const [isOpen, setOpen] = useState(false);
+  const ws = useRef<WebSocket | null>(null);
+
   useEffect(() => {
+    const socket = new WebSocket("wss://stream.binance.com:443/ws");
+
+    ws.current = socket;
+
     const open = () => {
-      console.log("Open");
-      wsInstance?.send(
-        JSON.stringify({
-          method: "SUBSCRIBE",
-          params: ["maticusdt@kline_1m"],
-          id: 1,
-        })
-      );
-    };
-    const close = () => {
-      console.log("WebSocket connection closed");
-    };
-    const messsage = (msg: MessageEvent<any>) => {
-      console.log(msg.data);
-    };
-    const error = (err: Event) => {
-      console.log(`WebSocket error: ${err}`);
+      setOpen(true);
+
+      if (ws.current) {
+        ws.current.send(
+          JSON.stringify({
+            method: "SUBSCRIBE",
+            params: list.map(
+              (symbol: string) => `${symbol.toLowerCase()}usdt@kline_1m`
+            ),
+            id: 1,
+          })
+        );
+      }
     };
 
-    if (wsInstance) {
-      wsInstance.onopen = open;
-      wsInstance.onerror = error;
-      wsInstance.onclose = close;
-    }
-
+    socket.onopen = open;
 
     return () => {
-      wsInstance?.removeEventListener("open", open);
-      wsInstance?.removeEventListener("error", error);
-      wsInstance?.removeEventListener("close", close);
+      socket.removeEventListener("open", open);
+      socket.close();
     };
   }, []);
 
-  return <div>{children}</div>;
+  const val = {
+    isOpen,
+    socket: ws.current,
+  };
+
+  return <WsContext.Provider value={val}>{children}</WsContext.Provider>;
 }

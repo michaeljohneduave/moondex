@@ -1,10 +1,12 @@
 "use client";
 
 import { wsInstance } from "@/lib/ws";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Price from "./Price";
+import { WsContext, WsContextType } from "./WsContainer";
 
 export type TokenType = {
+  id: number;
   name: string;
   symbol: string;
   price: number;
@@ -13,25 +15,25 @@ export type TokenType = {
 
 export default function Token(props: TokenType) {
   const [price, setPrice] = useState(props.price);
+  const ws: WsContextType | null = useContext(WsContext);
+  const ticker = `${props.symbol}USDT`;
+
   useEffect(() => {
     const message = (msg: MessageEvent<any>) => {
       const data = JSON.parse(msg.data);
-      const ticker = `${props.symbol}USDT`;
-
-      console.log(ticker, data);
       if (ticker === data.s) {
         setPrice(parseFloat(data.k.c));
       }
     };
 
-    if (wsInstance) {
-      wsInstance.onmessage = message;
+    if (ws?.isOpen && ws.socket) {
+      ws.socket.addEventListener("message", message);
     }
 
     return () => {
-      wsInstance?.removeEventListener("message", message);
+      ws?.socket?.removeEventListener("message", message);
     };
-  }, []);
+  }, [ws?.isOpen, ws?.socket]);
 
   return (
     <div className="w-full h-full bg-white shadow-md rounded p-4">
