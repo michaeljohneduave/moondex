@@ -4,6 +4,7 @@ import { wsInstance } from "@/lib/ws";
 import { useContext, useEffect, useState } from "react";
 import Price from "./Price";
 import { WsContext, WsContextType } from "./WsContainer";
+import Change from "./Change";
 
 export type TokenType = {
   id: number;
@@ -15,6 +16,7 @@ export type TokenType = {
 
 export default function Token(props: TokenType) {
   const [price, setPrice] = useState(props.price);
+  const [change, setChange] = useState(props.change);
   const ws: WsContextType | null = useContext(WsContext);
   const ticker = `${props.symbol}USDT`;
 
@@ -22,7 +24,8 @@ export default function Token(props: TokenType) {
     const message = (msg: MessageEvent<any>) => {
       const data = JSON.parse(msg.data);
       if (ticker === data.s) {
-        setPrice(parseFloat(data.k.c));
+        setPrice(parseFloat(data.c));
+        setChange(parseFloat(data.P));
       }
     };
 
@@ -40,14 +43,8 @@ export default function Token(props: TokenType) {
       <h2 className="text-xl font-bold">
         {props.name} ({props.symbol})
       </h2>
-      <Price price={price.toFixed(4)} />
-      <p
-        className={`text-sm ${
-          props.change < 0 ? "text-red-500" : "text-green-500"
-        }`}
-      >
-        {props.change < 0 ? "↓" : "↑"} {Math.abs(props.change)}%
-      </p>
+      <Price value={price.toFixed(4)} />
+      <Change value={change} />
     </div>
   );
 }
