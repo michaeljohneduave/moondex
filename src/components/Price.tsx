@@ -7,12 +7,12 @@ export default function Price({ price }: { price: string }) {
 
     setTimeout(() => {
       setBlink(false);
-    }, 1000);
+    }, 300);
   }, [price])
 
   return (
     <>
-      <p className={blink ? "text-gray-500 animate-blinking" : "text-gray-500 "}>Price: ${price}</p>
+      Price: <span className={blink ? "text-green-500 animate-blinking" : "text-gray-500 "}>${price}</span>
     </>
   );
 }
